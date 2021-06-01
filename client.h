@@ -80,9 +80,9 @@ class Client{
 	        bzero(buffer,256);
 	        //scanf("%s", buffer);
 			std::string message;
-			srand(time(NULL));
+			srand(client.request_pos);
 			client.request_val = rand() % 10 + 1;
-			client.request_pos++;
+			//client.request_pos++;
 
 			message = "4x" + std::to_string(client.replica_name) + "x-1" + "x" + std::to_string(client.request_val) + "x" + std::to_string(client.request_pos);
 			strcpy(buffer, message.c_str());

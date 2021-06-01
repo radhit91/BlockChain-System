@@ -139,7 +139,7 @@ class Replica{
 			std::string message;
 			switch(msg_type){
 				case 0: {
-					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x-1x-1";
+					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos);;
 					strcpy(buffer, message.c_str());
 					break;
  				}

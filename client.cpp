@@ -8,7 +8,7 @@
 #include "client.h"
 
 #define ATTR_CNT 5
-#define CNT 2
+#define CNT 5
 
 using namespace std;
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv){
 	else if(atoi(argv[6]) == 0){
 		//replica.Replica::client_connection(atoi(argv[6]));*/
 	
-
+	int pos = 0;
 	
 	uint16_t port_number = client.cli_port_no;
 
@@ -105,9 +105,11 @@ int main(int argc, char** argv){
 	int cnt = CNT;
 
     while (1) {
-
+	
+		pos++;
 		if(cnt){
-			srand(time(NULL));
+			client.request_pos = pos;
+			srand(cnt+ATTR_CNT);
 			client.Client::client_connection(rand() % 3 + 1, client);
 		}
 
@@ -119,6 +121,8 @@ int main(int argc, char** argv){
 
         if (pid == 0) {
             close(server_fd);
+			client.request_pos = pos;
+			printf("Position: %d\n", client.request_pos);
 
             if (client_fd == -1) {
                 exit(0);
@@ -167,9 +171,10 @@ int main(int argc, char** argv){
 				//std::string s = "scott>=tiger>=mushroom";
 				//std::string delimiter = ">=";
 
-				
+				printf("Position: %d\n", client.request_pos);
 				parse_message(client_fd, response, delimiter, &client);
 				printf("after");
+				printf("Position: %d\n", client.request_pos);
 
                 //send(client_fd, response, strlen(response), 0);
                 //printf("Responded with `%s`. Waiting for a new query...\n", response);
