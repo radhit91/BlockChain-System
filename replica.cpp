@@ -291,7 +291,7 @@ int main(int argc, char** argv){
                 last_operation = clock();
 				break;
             }
-            //exit(0);
+            exit(0);
         }
         else {
             close(client_fd);
