@@ -5,10 +5,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "client.h"
+#include "sclient.h"
+#include <vector>
+#include <unordered_map>
 
 #define ATTR_CNT 5
-#define CNT 5
+#define CNT 10
 
 using namespace std;
 
@@ -42,6 +44,8 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Client* client){
 	pos = s.find(delimiter);
 	string token[ATTR_CNT]; 
 	token[cnt] = s.substr(0, pos);
+	//if(stoi(token[cnt]) == 5)
+		//printf("Verfication Request Received. Sending result to node: %d\n", );
 	//printf("token: %s\n", token[cnt].c_str());
 	cnt++;
 	//cout << token << endl;
@@ -57,8 +61,11 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Client* client){
 		s = s.substr(pos + delimiter.length());
 	}
 	token[cnt] = s;
+	if(stoi(token[0]) == 5)
+		printf("Verfication Request Received. Sending result to node: %d\n", stoi(token[cnt]));
+	else
+		printf("Client Response(val = %d, pos = %d) received from replica %d\n", stoi(token[3]), stoi(token[4]), stoi(token[1]));
 	//printf("token: %s\n", token[cnt].c_str());
-	printf("Client Response(val = %d, pos = %d) received from replica %d\n", stoi(token[3]), stoi(token[4]), stoi(token[1]));
 }
 
 int main(int argc, char** argv){
@@ -66,6 +73,8 @@ int main(int argc, char** argv){
 	Client client(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
 	//cout << replica.timer << endl;
 	string delimiter = "x";
+	//vector<int> secret_key;
+	unordered_map<int, int> hash_map;
 
 	/*if(atoi(argv[6]) == 1){
 		replica.Replica::client_connection(atoi(argv[6]));
@@ -74,6 +83,7 @@ int main(int argc, char** argv){
 		//replica.Replica::client_connection(atoi(argv[6]));*/
 	
 	int pos = 0;
+	int secret_key = 0;
 	
 	uint16_t port_number = client.cli_port_no;
 
@@ -108,11 +118,16 @@ int main(int argc, char** argv){
     while (1) {
 	
 		pos++;
+		secret_key = 7*pos + 3*cnt + 5;
+
 		if(cnt){
+			client.secret_key = secret_key;
 			client.request_pos = pos;
 			client.max_ballot = pos + ATTR_CNT;
 			srand(cnt+ATTR_CNT);
-			client.Client::client_connection(rand() % 3 + 1, client); 
+			int replica_no = rand() % 3 + 1;
+			client.Client::client_connection(replica_no, client);
+			hash_map[replica_no] = secret_key;
 			//printf("Done: %d\n", cnt);
 		}
 

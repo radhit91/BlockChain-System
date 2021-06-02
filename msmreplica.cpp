@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "replica.h"
+#include "sreplica.h"
 
 #define ATTR_CNT 5
 
@@ -40,7 +40,7 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	size_t pos = 0, cnt = 0;
 	string s(c_arr);
 	pos = s.find(delimiter);
-	string token[ATTR_CNT]; 
+	string token[ATTR_CNT+2]; 
 	token[cnt] = s.substr(0, pos);
 	//printf("token: %s\n", token[cnt].c_str());
 	cnt++;
@@ -63,16 +63,21 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	//printf("inside\n");
 
 	if(stoi(token[0]) == 0){
-		//printf("Received message: %d, %d, %d, -1, -1\n", stoi(token[0]), stoi(token[1]), stoi(token[2]));
 		printf("Prepare Message(ballot = %d) from replica %d\n", stoi(token[2]), stoi(token[1]));
+		replica->secret_key = stoi(token[5]) + 3;
 		//printf("%d %d\n", replica->max_ballot, stoi(token[2]));
 		if(replica->max_ballot < stoi(token[2])){
 			replica->max_ballot = stoi(token[2]);
 			if(replica->last_prop_val == -1 && replica->last_log_pos == -1){
 				//printf("message 0\n");
-				replica->last_prop_val = stoi(token[3]);
-				replica->last_log_pos = stoi(token[4]);
+				replica->last_prop_val = stoi(token[3]) + 1;
+				replica->last_log_pos = stoi(token[4]) + 2;
 			}
+			else{
+				replica->last_prop_val = replica->last_prop_val + 1;
+				replica->last_log_pos = replica->last_log_pos + 2;
+			}
+			replica->flag = 1;
 			if(replica->Replica::client_connection(stoi(token[1]), 1, replica)){
 				printf("Unable to send promise message. Exiting...\n");
 				exit(0);
@@ -82,9 +87,31 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	}
 	else if(stoi(token[0]) == 1){
 		replica->max_ballot = stoi(token[2]);
-		//printf("Received message: %d, %d, %d, -1, -1\n", stoi(token[0]), stoi(token[1]), stoi(token[2]));
+		replica->secret_key = stoi(token[5]);
 		printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), -1, -1, stoi(token[1]));
-		if(stoi(token[3]) != -1 && stoi(token[4]) != -1){
+		if(cnt == 6 && stoi(token[6]) == -1){
+			/*if(replica->Replica::client_connection(4, 5, replica)){
+				printf("Unable to send propose message. Exiting...\n");
+				exit(0);
+			} */
+			printf("Received verification response from client. Verification Failed. Malicious node found: %d\n", stoi(token[1]));
+			replica->secret_key = replica->secret_key - 3;
+			replica->request_val = stoi(token[3]) - 1;
+			replica->request_pos = stoi(token[4]) - 2;
+			int i;
+			for(i = 1; i < 4; i++){
+				if(i != replica->replica_name && i != stoi(token[1]))
+					break;
+			}
+			
+			if(replica->Replica::client_connection(i, 0, replica)){
+				printf("Unable to send prepare message to other replicas. Exiting...\n");
+				exit(0);
+			}
+		
+			
+		}
+		else if(stoi(token[3]) != -1 && stoi(token[4]) != -1){
 			//printf("message 11\n");
 			replica->last_prop_val = stoi(token[3]);
 			replica->last_log_pos = stoi(token[4]);
@@ -107,7 +134,7 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	}
 	else if(stoi(token[0]) == 2){
 		replica->max_ballot = stoi(token[2]);
-		//printf("Received message: %d, %d, %d, %d, %d\n", stoi(token[0]), stoi(token[1]), stoi(token[2]), stoi(token[3]), stoi(token[4]));
+		replica->secret_key = stoi(token[5]);
 		printf("Propose Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), stoi(token[3]), stoi(token[4]), stoi(token[1]));
 		//printf("message 2\n");
 		replica->last_prop_val = stoi(token[3]);
@@ -121,7 +148,7 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	}
 	else if(stoi(token[0]) == 3){
 		replica->max_ballot = stoi(token[2]);
-		//printf("Received message: %d, %d, %d, %d, %d\n", stoi(token[0]), stoi(token[1]), stoi(token[2]), stoi(token[3]), stoi(token[4]));
+		replica->secret_key = stoi(token[5]);
 		printf("Accept Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), stoi(token[3]), stoi(token[4]), stoi(token[1]));
 		//printf("message 3\n");
 		replica->last_prop_val = stoi(token[3]);
@@ -141,21 +168,21 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 
 	}
 	else if(stoi(token[0]) == 4){
-		//printf("Received message: %d, %d, %d, %d, %d\n", stoi(token[0]), stoi(token[1]), stoi(token[2]), stoi(token[3]), stoi(token[4]));
 		printf("Client Request(val = %d)\n",stoi(token[3]));
 		//replica->max_ballot = replica->max_ballot + 1;
 		replica->max_ballot = stoi(token[2]);
 		//replica->max_ballot = max_ballot;
 		replica->request_val = stoi(token[3]);
 		replica->request_pos = stoi(token[4]);
+		replica->secret_key = stoi(token[5]);
 		//printf("%d %d\n", replica->request_val, replica->request_pos);
 		replica->last_prop_val = replica->request_val;
 		replica->last_log_pos = replica->request_pos;
 		replica->is_leader = true;
 		int server1, server2;
 		if(replica->replica_name == 1){
-			server1 = 2;
-			server2 = 3;
+			server1 = 3;
+			server2 = 2;
 		}
 		else if(replica->replica_name == 2){
 			server1 = 3;

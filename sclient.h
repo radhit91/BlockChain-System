@@ -7,6 +7,7 @@ class Client{
 	int request_val = -1;
 	int request_pos = 0;
 	int max_ballot = -1;
+	int secret_key = -1;
 	int r1_port_no;
 	int r2_port_no;
 	int r3_port_no;
@@ -85,12 +86,10 @@ class Client{
 			client.request_val = rand() % 10 + 1;
 			//client.request_pos++;
 
-			message = "4x" + std::to_string(client.replica_name) + "x" + std::to_string(client.max_ballot) + "x" + std::to_string(client.request_val) + "x" + std::to_string(client.request_pos);
+			message = "4x" + std::to_string(client.replica_name) + "x" + std::to_string(client.max_ballot) + "x" + std::to_string(client.request_val) + "x" + std::to_string(client.request_pos) + "x" + std::to_string(client.secret_key);
 			strcpy(buffer, message.c_str());
-
-			printf("Client request(val = %d) sent to replica %d\n", client.request_val, replica_name);
 			
- 			
+ 			printf("Client request(val = %d) sent to replica %d\n", client.request_val, replica_name);
 				
 	
 	        n = write(sockfd,buffer,strlen(buffer));
