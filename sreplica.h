@@ -15,6 +15,8 @@ class Replica{
 	bool is_leader = false;
 	int replica_name;
 	int max_ballot = 0;
+	int secret_key = -1;
+	int flag = -1;
 	int last_prop_val = -1;
 	int last_log_pos = -1;
 	int request_val = -1;
@@ -139,28 +141,28 @@ class Replica{
 			std::string message;
 			switch(msg_type){
 				case 0: {
-					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos);
+					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x" + std::to_string(replica->secret_key);
 					strcpy(buffer, message.c_str());
 					break;
  				}
 				case 1: {
-					if(replica->msg_type == 1){
-						message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x-1";
-					strcpy(buffer, message.c_str());
+					if (flag == 1){
+						std::string ext = "-1";
+						message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x" + std::to_string(replica->secret_key) + "x" + ext ;
 					}
-					else {
-						message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos);
-					strcpy(buffer, message.c_str());
+					else{
+						message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x" + std::to_string(replica->secret_key);
 					}
+					strcpy(buffer, message.c_str());
 					break;
  				}
 				case 2: {
-					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos);
+					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x" + std::to_string(replica->secret_key);
 					strcpy(buffer, message.c_str());
 					break;
  				}
 				case 3: {
-					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos);
+					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name) + "x" + std::to_string(replica->max_ballot) + "x" + std::to_string(replica->last_prop_val) + "x" + std::to_string(replica->last_log_pos) + "x" + std::to_string(replica->secret_key);
 					strcpy(buffer, message.c_str());
 					break;
  				}
@@ -169,6 +171,10 @@ class Replica{
 					strcpy(buffer, message.c_str());
 					break;
  				}
+				case 5: {
+					message = std::to_string(msg_type) + "x" + std::to_string(replica->replica_name);
+					strcpy(buffer, message.c_str());
+				}
 				default:
 					break;
 

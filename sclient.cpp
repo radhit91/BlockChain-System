@@ -8,6 +8,8 @@
 #include "sclient.h"
 #include <vector>
 #include <unordered_map>
+#include <cstdio>
+#include <ctime>
 
 #define ATTR_CNT 5
 #define CNT 10
@@ -112,11 +114,14 @@ int main(int argc, char** argv){
     char *response = NULL;
     time_t last_operation;
     __pid_t pid = -1;
+	std::clock_t start;
+    double duration;
 
 	int cnt = CNT;
 
     while (1) {
 	
+		start = std::clock();
 		pos++;
 		secret_key = 7*pos + 3*cnt + 5;
 
@@ -132,6 +137,11 @@ int main(int argc, char** argv){
 		}
 
 		cnt--;
+
+		if(cnt == 0){
+			duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+			printf("Average Latency: %lf s\n", duration);
+		}
 
         int client_fd = accept(server_fd, (struct sockaddr *) &client_sockaddr, &client_socklen);
 

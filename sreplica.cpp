@@ -87,7 +87,12 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 	else if(stoi(token[0]) == 1){
 		replica->max_ballot = stoi(token[2]);
 		replica->secret_key = stoi(token[5]);
-		printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), -1, -1, stoi(token[1]));
+		if(cnt == 6 && stoi(token[6]) == -1){
+			printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), stoi(token[3]), stoi(token[4]), stoi(token[1]));
+		}
+		else {
+			printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), -1, -1, stoi(token[1]));
+		}
 		if(cnt == 6 && stoi(token[6]) == -1){
 			/*if(replica->Replica::client_connection(4, 5, replica)){
 				printf("Unable to send propose message. Exiting...\n");

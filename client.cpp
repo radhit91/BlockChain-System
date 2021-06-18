@@ -6,9 +6,11 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "client.h"
+#include <cstdio>
+#include <ctime>
 
 #define ATTR_CNT 5
-#define CNT 5
+#define CNT 50
 
 using namespace std;
 
@@ -102,21 +104,30 @@ int main(int argc, char** argv){
     char *response = NULL;
     time_t last_operation;
     __pid_t pid = -1;
+	std::clock_t start;
+    double duration;
 
 	int cnt = CNT;
 
     while (1) {
 	
+		start = std::clock();
 		pos++;
 		if(cnt){
 			client.request_pos = pos;
 			client.max_ballot = pos + ATTR_CNT;
-			srand(cnt+ATTR_CNT);
+			//srand(cnt+ATTR_CNT);
+			srand(time(NULL)+cnt);
 			client.Client::client_connection(rand() % 3 + 1, client); 
 			//printf("Done: %d\n", cnt);
 		}
 
 		cnt--;
+		//printf("%d\n", cnt);
+		if(cnt == 0){
+			duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+			printf("Average Latency: %lf s\n", duration);
+		}
 
         int client_fd = accept(server_fd, (struct sockaddr *) &client_sockaddr, &client_socklen);
 

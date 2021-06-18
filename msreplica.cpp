@@ -76,6 +76,7 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 				replica->last_prop_val = replica->last_prop_val + 1;
 				replica->last_log_pos = replica->last_log_pos + 2;
 			}
+			replica->msg_type = 1;
 			if(replica->Replica::client_connection(stoi(token[1]), 1, replica)){
 				printf("Unable to send promise message. Exiting...\n");
 				exit(0);

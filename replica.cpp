@@ -8,7 +8,7 @@
 #include <netdb.h>
 #include "replica.h"
 
-#define ATTR_CNT 5
+#define ATTR_CNT 6
 
 using namespace std;
 
@@ -81,9 +81,15 @@ void parse_message(int cli_fd, char* c_arr, string delimiter, Replica* replica){
 
 	}
 	else if(stoi(token[0]) == 1){
+		printf("t\n");
 		replica->max_ballot = stoi(token[2]);
 		//printf("Received message: %d, %d, %d, -1, -1\n", stoi(token[0]), stoi(token[1]), stoi(token[2]));
-		printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), -1, -1, stoi(token[1]));
+		if(cnt == 5 && stoi(token[5]) == -1){
+			printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), stoi(token[3]), stoi(token[4]), stoi(token[1]));
+		}
+		else{
+			printf("Promise Message(ballot = %d, val = %d, position = %d) from replica %d\n", stoi(token[2]), -1, -1, stoi(token[1]));
+		}
 		if(stoi(token[3]) != -1 && stoi(token[4]) != -1){
 			//printf("message 11\n");
 			replica->last_prop_val = stoi(token[3]);
